@@ -1,15 +1,19 @@
 /**
  * JARVIS Holographic HUD Orchestrator
- * Connects Voice Engine, City Camera Modals, News Radar, and Telemetry Feeds.
+ * Connects Voice Engine, 4K Satellite Reconnaissance, Tactical City Cameras, and Telemetry.
  */
 
 let globe = null;
+let satMap = null;
+let satMarker = null;
+let activeCity = null;
+let activeMode = "sat"; // "sat", "street", "flir"
 let synth = window.speechSynthesis;
 let recognition = null;
 let isListening = false;
 
 document.addEventListener("DOMContentLoaded", () => {
-  // 1. Initialize 3D Globe
+  // 1. Initialize 4K 3D Globe
   globe = new PlanetaryGlobeVisualizer("three-globe-container", onCityClicked);
 
   // 2. Fetch Initial Cities & News
@@ -20,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // 3. Setup Telemetry & News Polling
   setInterval(loadSystemTelemetry, 3500);
   setInterval(loadGlobalNews, 30000);
+  startHudClock();
 
   // 4. Setup Speech Recognition
   setupVoiceRecognition();
@@ -38,6 +43,17 @@ document.addEventListener("DOMContentLoaded", () => {
   // Modal Close
   document.getElementById("close-modal-btn").addEventListener("click", closeCameraModal);
 });
+
+// HUD Microsecond Clock
+function startHudClock() {
+  const tsEl = document.getElementById("hud-live-timestamp");
+  setInterval(() => {
+    if (tsEl) {
+      const d = new Date();
+      tsEl.innerText = `UTC: ${d.toISOString().replace("T", " ").replace("Z", "")}`;
+    }
+  }, 100);
+}
 
 // Load Cities
 async function loadPlanetaryCities() {
@@ -77,35 +93,115 @@ function renderCityList(cities) {
 
 // City Selected Handler
 function onCityClicked(city) {
+  activeCity = city;
   globe.focusCity(city);
   openCameraModal(city);
 
-  // Jarvis Speaks
   speakJarvis(
-    `Reconnaissance optical feed locked on ${city.name}, ${city.country}. Local temperature is ${city.weather_temp_c} degrees Celsius. Live camera feed online, sir.`
+    `Reconnaissance optical feed locked on ${city.name}, ${city.country}. Local temperature is ${city.weather_temp_c} degrees Celsius. 4K high-resolution satellite reconnaissance online, sir.`
   );
 }
 
 // Open Camera Viewfinder Modal
 function openCameraModal(city) {
+  activeCity = city;
   const modal = document.getElementById("camera-modal");
   document.getElementById("modal-city-name").innerText = `${city.name.toUpperCase()} RECONNAISSANCE FEED`;
   document.getElementById("modal-camera-name").innerText = city.camera_name;
   document.getElementById("stat-pop").innerText = city.population;
   document.getElementById("stat-time").innerText = city.local_time;
-  document.getElementById("stat-coords").innerText = `${city.lat.toFixed(2)}°, ${city.lon.toFixed(2)}°`;
+  document.getElementById("stat-coords").innerText = `${city.lat.toFixed(4)}°, ${city.lon.toFixed(4)}°`;
   document.getElementById("stat-weather").innerText = `${city.weather_condition} (${city.weather_temp_c}°C)`;
 
-  const frame = document.getElementById("camera-stream-frame");
-  frame.src = city.camera_stream_url;
+  // Update Street Cam image
+  const streetImg = document.getElementById("street-cam-img");
+  streetImg.src = city.camera_fallback_image;
 
   modal.classList.add("active");
+
+  // Initialize or update Leaflet 4K Satellite Recon Map
+  initSatelliteMap(city.lat, city.lon);
+
+  // Default to 4K Satellite view
+  switchCameraMode("sat");
+}
+
+function initSatelliteMap(lat, lon) {
+  const mapContainer = document.getElementById("sat-map-container");
+
+  if (!satMap) {
+    satMap = L.map("sat-map-container", {
+      zoomControl: true,
+      attributionControl: false,
+    }).setView([lat, lon], 14);
+
+    // 4K High-Resolution Esri World Imagery Satellite Tiles
+    L.tileLayer(
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      {
+        maxZoom: 19,
+        subdomains: ["server", "services"],
+      }
+    ).addTo(satMap);
+
+    satMarker = L.circleMarker([lat, lon], {
+      radius: 12,
+      color: "#00f0ff",
+      fillColor: "#00f0ff",
+      fillOpacity: 0.4,
+      weight: 2,
+    }).addTo(satMap);
+  } else {
+    setTimeout(() => {
+      satMap.invalidateSize();
+      satMap.flyTo([lat, lon], 14, { duration: 1.5 });
+      if (satMarker) {
+        satMarker.setLatLng([lat, lon]);
+      }
+    }, 200);
+  }
+}
+
+// Switch Optical Modes: Satellite, Street, FLIR
+function switchCameraMode(mode) {
+  activeMode = mode;
+  const viewfinder = document.getElementById("camera-viewfinder");
+  const satContainer = document.getElementById("sat-map-container");
+  const streetContainer = document.getElementById("street-cam-container");
+  const telemText = document.getElementById("cam-telemetry-text");
+  const sensorType = document.getElementById("hud-sensor-type");
+
+  document.querySelectorAll(".mode-tab-btn").forEach((b) => b.classList.remove("active"));
+
+  if (mode === "sat") {
+    document.getElementById("btn-mode-sat").classList.add("active");
+    viewfinder.classList.remove("flir-active");
+    satContainer.style.display = "block";
+    streetContainer.style.display = "none";
+    telemText.innerText = "ORBITAL RECON // 4K SATELLITE MULTISPECTRAL // RECON ACTIVE";
+    sensorType.innerText = "SENSOR: ESRI 4K MULTISPECTRAL";
+    if (satMap) {
+      setTimeout(() => satMap.invalidateSize(), 100);
+    }
+  } else if (mode === "street") {
+    document.getElementById("btn-mode-street").classList.add("active");
+    viewfinder.classList.remove("flir-active");
+    satContainer.style.display = "none";
+    streetContainer.style.display = "block";
+    telemText.innerText = "TACTICAL OPTICAL CAM // 4K PANORAMA // HIGH RESOLUTION";
+    sensorType.innerText = "SENSOR: TACTICAL RGB SENSOR";
+  } else if (mode === "flir") {
+    document.getElementById("btn-mode-flir").classList.add("active");
+    viewfinder.classList.add("flir-active");
+    satContainer.style.display = "none";
+    streetContainer.style.display = "block";
+    telemText.innerText = "THERMAL FLIR // LONG-WAVE INFRARED (LWIR) // TARGET LOCK";
+    sensorType.innerText = "SENSOR: INFRARED FLIR 8-14 µm";
+  }
 }
 
 function closeCameraModal() {
   const modal = document.getElementById("camera-modal");
-  const frame = document.getElementById("camera-stream-frame");
-  frame.src = "";
   modal.classList.remove("active");
 }
 
@@ -200,8 +296,7 @@ async function dispatchCommand(query) {
     speakJarvis(data.speech);
 
     if (data.action === "FOCUS_CITY" && data.city_data) {
-      globe.focusCity(data.city_data);
-      openCameraModal(data.city_data);
+      onCityClicked(data.city_data);
     }
   } catch (err) {
     console.error("Command error:", err);
@@ -210,13 +305,12 @@ async function dispatchCommand(query) {
 
 function speakJarvis(text) {
   if (!synth) return;
-  synth.cancel(); // Stop any pending speech
+  synth.cancel();
 
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.rate = 1.05;
   utterance.pitch = 0.95;
 
-  // Try to find a distinguished British or deep English voice
   const voices = synth.getVoices();
   const jarvisVoice = voices.find(
     (v) => v.lang.includes("en-GB") || v.name.includes("UK") || v.name.includes("George") || v.name.includes("Daniel")

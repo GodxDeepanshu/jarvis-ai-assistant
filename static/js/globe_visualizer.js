@@ -1,6 +1,6 @@
 /**
- * Three.js Holographic 3D Planetary Earth Globe Visualizer.
- * Renders glowing Earth, orbital satellites, and interactive clickable city beacons.
+ * Three.js 4K Photorealistic Earth Globe Visualizer with Atmospheric Clouds & City Beacons.
+ * Renders NASA Blue Marble Earth textures, cloud layers, and interactive city targets.
  */
 class PlanetaryGlobeVisualizer {
   constructor(containerId, onCitySelectCallback) {
@@ -14,12 +14,12 @@ class PlanetaryGlobeVisualizer {
     this.camera = null;
     this.renderer = null;
     this.earthGroup = null;
+    this.cloudsMesh = null;
     this.raycaster = new THREE.Raycaster();
     this.mouse = new THREE.Vector2();
 
     this.isDragging = false;
     this.previousMousePosition = { x: 0, y: 0 };
-    this.targetRotation = { x: 0, y: 0 };
 
     this.init();
   }
@@ -30,55 +30,85 @@ class PlanetaryGlobeVisualizer {
 
     // 1. Scene & Camera
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 2000);
-    this.camera.position.z = 260;
+    this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 2500);
+    this.camera.position.z = 270;
 
     // 2. Renderer
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     this.renderer.setSize(width, height);
     this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.15;
     this.container.appendChild(this.renderer.domElement);
 
-    // 3. Earth Group
+    // 3. Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.3);
+    this.scene.add(ambientLight);
+
+    const sunLight = new THREE.DirectionalLight(0xffffff, 1.8);
+    sunLight.position.set(300, 150, 250);
+    this.scene.add(sunLight);
+
+    const backRimLight = new THREE.DirectionalLight(0x00f0ff, 0.8);
+    backRimLight.position.set(-300, -100, -200);
+    this.scene.add(backRimLight);
+
+    // 4. Earth Group
     this.earthGroup = new THREE.Group();
     this.scene.add(this.earthGroup);
 
-    // 4. Earth Inner Core Sphere
-    const coreGeo = new THREE.SphereGeometry(this.globeRadius, 64, 64);
-    const coreMat = new THREE.MeshBasicMaterial({
-      color: 0x031224,
-      transparent: true,
-      opacity: 0.85,
-    });
-    const coreMesh = new THREE.Mesh(coreGeo, coreMat);
-    this.earthGroup.add(coreMesh);
+    // 5. Texture Loader
+    const textureLoader = new THREE.TextureLoader();
 
-    // 5. Wireframe Grid Sphere
-    const wireGeo = new THREE.SphereGeometry(this.globeRadius + 0.5, 36, 18);
-    const wireMat = new THREE.MeshBasicMaterial({
-      color: 0x00f0ff,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.18,
-    });
-    const wireMesh = new THREE.Mesh(wireGeo, wireMat);
-    this.earthGroup.add(wireMesh);
+    // 6. Photorealistic 4K Earth Core Mesh
+    const earthGeo = new THREE.SphereGeometry(this.globeRadius, 64, 64);
+    
+    // Load Day texture
+    const dayTexture = textureLoader.load(
+      "/static/textures/earth_day.jpg",
+      () => this.renderer.render(this.scene, this.camera)
+    );
+    dayTexture.wrapS = THREE.ClampToEdgeWrapping;
+    dayTexture.wrapT = THREE.ClampToEdgeWrapping;
 
-    // 6. Glowing Atmospheric Shell
-    const glowGeo = new THREE.SphereGeometry(this.globeRadius + 3.5, 64, 64);
+    const earthMat = new THREE.MeshStandardMaterial({
+      map: dayTexture,
+      roughness: 0.65,
+      metalness: 0.1,
+    });
+    const earthMesh = new THREE.Mesh(earthGeo, earthMat);
+    this.earthGroup.add(earthMesh);
+
+    // 7. Revolving Atmospheric Clouds Sphere
+    const cloudGeo = new THREE.SphereGeometry(this.globeRadius + 1.2, 64, 64);
+    const cloudTexture = textureLoader.load(
+      "/static/textures/earth_clouds.png",
+      () => this.renderer.render(this.scene, this.camera)
+    );
+    const cloudMat = new THREE.MeshStandardMaterial({
+      map: cloudTexture,
+      transparent: true,
+      opacity: 0.45,
+      blending: THREE.AdditiveBlending,
+    });
+    this.cloudsMesh = new THREE.Mesh(cloudGeo, cloudMat);
+    this.earthGroup.add(this.cloudsMesh);
+
+    // 8. Glowing Atmospheric Halo Shell
+    const glowGeo = new THREE.SphereGeometry(this.globeRadius + 3.8, 64, 64);
     const glowMat = new THREE.MeshBasicMaterial({
       color: 0x00c8ff,
       transparent: true,
-      opacity: 0.12,
+      opacity: 0.16,
       side: THREE.BackSide,
     });
     const glowMesh = new THREE.Mesh(glowGeo, glowMat);
     this.earthGroup.add(glowMesh);
 
-    // 7. Orbital Satellite Ring
-    const ringGeo = new THREE.RingGeometry(this.globeRadius + 18, this.globeRadius + 19, 64);
+    // 9. Holographic Orbital Ring
+    const ringGeo = new THREE.RingGeometry(this.globeRadius + 22, this.globeRadius + 23.2, 64);
     const ringMat = new THREE.MeshBasicMaterial({
-      color: 0xff9900,
+      color: 0x00f0ff,
       side: THREE.DoubleSide,
       transparent: true,
       opacity: 0.35,
@@ -87,7 +117,7 @@ class PlanetaryGlobeVisualizer {
     ringMesh.rotation.x = Math.PI / 3;
     this.earthGroup.add(ringMesh);
 
-    // 8. Event Listeners
+    // 10. Setup Events & Start Loop
     this.setupEvents();
     this.animate = this.animate.bind(this);
     requestAnimationFrame(this.animate);
@@ -162,28 +192,27 @@ class PlanetaryGlobeVisualizer {
   loadCities(citiesData) {
     this.cities = citiesData;
 
-    // Remove existing meshes
     this.cityMeshes.forEach((m) => this.earthGroup.remove(m));
     this.cityMeshes = [];
 
     citiesData.forEach((city) => {
-      const pos = this.latLonToVector3(city.lat, city.lon, this.globeRadius + 1.2);
+      const pos = this.latLonToVector3(city.lat, city.lon, this.globeRadius + 1.8);
 
-      // 1. Center glowing beacon dot
-      const beaconGeo = new THREE.SphereGeometry(1.8, 16, 16);
+      // 1. Center pulsing beacon dot
+      const beaconGeo = new THREE.SphereGeometry(1.6, 16, 16);
       const beaconMat = new THREE.MeshBasicMaterial({
         color: 0x00f0ff,
       });
       const beaconMesh = new THREE.Mesh(beaconGeo, beaconMat);
       beaconMesh.position.copy(pos);
 
-      // 2. Pulsing target ring
-      const ringGeo = new THREE.RingGeometry(2.5, 3.8, 24);
+      // 2. Targeting concentric reticle ring
+      const ringGeo = new THREE.RingGeometry(2.4, 3.6, 24);
       const ringMat = new THREE.MeshBasicMaterial({
-        color: 0xff9900,
+        color: 0xffaa00,
         side: THREE.DoubleSide,
         transparent: true,
-        opacity: 0.75,
+        opacity: 0.85,
       });
       const ringMesh = new THREE.Mesh(ringGeo, ringMat);
       ringMesh.position.copy(pos);
@@ -200,7 +229,6 @@ class PlanetaryGlobeVisualizer {
   }
 
   focusCity(cityData) {
-    // Rotate globe to center on city coordinates
     const phi = (90 - cityData.lat) * (Math.PI / 180);
     const theta = (cityData.lon + 180) * (Math.PI / 180);
 
@@ -214,13 +242,18 @@ class PlanetaryGlobeVisualizer {
   animate() {
     requestAnimationFrame(this.animate);
 
-    // Auto slow continuous rotation if not user-dragging
+    // Auto rotate earth slowly
     if (!this.isDragging) {
-      this.earthGroup.rotation.y += 0.0015;
+      this.earthGroup.rotation.y += 0.0012;
+    }
+
+    // Clouds rotate independently
+    if (this.cloudsMesh) {
+      this.cloudsMesh.rotation.y += 0.0004;
     }
 
     // Pulse city beacons
-    const pulseScale = 1.0 + 0.25 * Math.sin(Date.now() * 0.006);
+    const pulseScale = 1.0 + 0.3 * Math.sin(Date.now() * 0.007);
     this.cityMeshes.forEach((cm) => {
       cm.children[1].scale.set(pulseScale, pulseScale, pulseScale);
     });

@@ -9,8 +9,9 @@
   --hud-orange: #ff9900;
   --hud-gold: #ffd700;
   --hud-red: #ff3344;
+  --hud-green: #00ff88;
   --hud-bg-dark: #030814;
-  --hud-panel-bg: rgba(4, 16, 32, 0.75);
+  --hud-panel-bg: rgba(4, 16, 32, 0.78);
   --hud-border: 1px solid rgba(0, 240, 255, 0.35);
   --font-mono: "Consolas", "Courier New", monospace;
   --font-hud: "Segoe UI", "Roboto", -apple-system, sans-serif;
@@ -38,7 +39,7 @@ body::after {
   display: block;
   position: absolute;
   top: 0; left: 0; bottom: 0; right: 0;
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.22) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
   z-index: 1000;
   background-size: 100% 3px, 6px 100%;
   pointer-events: none;
@@ -229,7 +230,7 @@ body::after {
   transform: translateX(-50%);
   width: 65%;
   max-width: 680px;
-  background: rgba(3, 12, 28, 0.85);
+  background: rgba(3, 12, 28, 0.88);
   border: 1px solid var(--hud-cyan);
   box-shadow: 0 0 25px var(--hud-cyan-glow);
   border-radius: 30px;
@@ -394,22 +395,24 @@ body::after {
   100% { transform: translateX(-100%); }
 }
 
-/* City Live Camera Modal */
+/* ==========================================================================
+   CITY LIVE RECONNAISSANCE MODAL & OPTICAL VIEWFINDER
+   ========================================================================== */
 .camera-modal {
   display: none;
   position: fixed;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  width: 820px;
-  max-width: 90vw;
-  background: rgba(2, 9, 22, 0.96);
+  width: 920px;
+  max-width: 92vw;
+  background: rgba(2, 8, 20, 0.98);
   border: 2px solid var(--hud-cyan);
-  box-shadow: 0 0 40px var(--hud-cyan-glow);
+  box-shadow: 0 0 45px var(--hud-cyan-glow);
   border-radius: 12px;
   z-index: 10000;
   flex-direction: column;
   overflow: hidden;
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(24px);
 }
 
 .camera-modal.active {
@@ -417,56 +420,118 @@ body::after {
 }
 
 .modal-header {
-  padding: 14px 20px;
-  background: linear-gradient(90deg, rgba(0, 240, 255, 0.2) 0%, transparent 100%);
+  padding: 12px 20px;
+  background: linear-gradient(90deg, rgba(0, 240, 255, 0.22) 0%, transparent 100%);
   border-bottom: 1px solid rgba(0, 240, 255, 0.3);
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-family: var(--font-mono);
+  gap: 16px;
 }
 
 .modal-title {
   color: var(--hud-cyan);
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.view-mode-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.mode-tab-btn {
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  color: #b0e3ff;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding: 5px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mode-tab-btn:hover {
+  background: rgba(0, 240, 255, 0.25);
+  color: #fff;
+}
+
+.mode-tab-btn.active {
+  background: var(--hud-cyan);
+  color: #030814;
+  font-weight: bold;
+  box-shadow: 0 0 10px var(--hud-cyan);
 }
 
 .close-modal-btn {
   background: transparent;
   border: none;
   color: var(--hud-cyan);
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   cursor: pointer;
+  line-height: 1;
 }
 
+/* Viewfinder Area */
 .camera-viewfinder {
   position: relative;
   width: 100%;
-  height: 420px;
+  height: 440px;
   background: #000;
+  overflow: hidden;
 }
 
-.camera-stream-frame {
+.sat-map-container {
   width: 100%;
   height: 100%;
-  border: none;
+  z-index: 1;
 }
 
+.street-cam-container {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0; left: 0;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.street-cam-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: filter 0.3s ease, transform 0.5s ease;
+}
+
+/* Thermal FLIR Filter Mode */
+.camera-viewfinder.flir-active .street-cam-img,
+.camera-viewfinder.flir-active .sat-map-container {
+  filter: invert(1) hue-rotate(180deg) contrast(1.6) brightness(1.1);
+}
+
+/* Overlays */
 .viewfinder-hud-overlay {
   position: absolute;
   top: 14px; left: 16px;
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--hud-red);
   display: flex;
   align-items: center;
   gap: 8px;
+  z-index: 10;
   pointer-events: none;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 51, 68, 0.4);
 }
 
 .rec-dot {
-  width: 10px; height: 10px;
+  width: 9px; height: 9px;
   background: var(--hud-red);
   border-radius: 50%;
   animation: blinkRec 1s infinite;
@@ -474,15 +539,55 @@ body::after {
 
 @keyframes blinkRec {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+  50% { opacity: 0.2; }
 }
 
+.tactical-reticle {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px; height: 120px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.reticle-box {
+  width: 100%; height: 100%;
+  border: 1px dashed rgba(0, 240, 255, 0.45);
+  box-sizing: border-box;
+}
+
+.reticle-line-h {
+  position: absolute; top: 50%; left: -20px; right: -20px; height: 1px; background: rgba(0, 240, 255, 0.6);
+}
+
+.reticle-line-v {
+  position: absolute; left: 50%; top: -20px; bottom: -20px; width: 1px; background: rgba(0, 240, 255, 0.6);
+}
+
+.viewfinder-bottom-hud {
+  position: absolute;
+  bottom: 12px; left: 16px; right: 16px;
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--hud-cyan);
+  background: rgba(0, 0, 0, 0.65);
+  padding: 4px 12px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Modal Intel Grid */
 .modal-intel-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   padding: 16px 20px;
   gap: 12px;
-  background: rgba(0, 16, 32, 0.6);
+  background: rgba(0, 14, 28, 0.85);
   font-family: var(--font-mono);
   font-size: 0.8rem;
 }

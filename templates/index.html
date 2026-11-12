@@ -8,7 +8,11 @@
   <!-- Holographic HUD Styling -->
   <link rel="stylesheet" href="/static/css/stark_hud.css">
 
-  <!-- Three.js CDN for 3D Earth Globe -->
+  <!-- Leaflet 4K Satellite Mapping CDN -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Three.js CDN for 3D 4K Earth Globe -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
@@ -40,14 +44,14 @@
       <section class="hud-panel">
         <div class="panel-header">
           <span>🌍 Planetary Citadels</span>
-          <span style="font-size: 0.7rem; color: var(--hud-orange);">LIVE OPTICALS</span>
+          <span style="font-size: 0.7rem; color: var(--hud-orange);">LIVE SENSORS</span>
         </div>
         <div class="panel-body" id="cities-list">
           <!-- Dynamic City Cards Render Here -->
         </div>
       </section>
 
-      <!-- Center Viewport: 3D Earth Globe & Voice HUD -->
+      <!-- Center Viewport: 3D 4K Earth Globe & Voice HUD -->
       <section class="globe-viewport">
         <div id="three-globe-container"></div>
         <div class="globe-reticle-overlay"></div>
@@ -86,7 +90,7 @@
         </div>
         <div class="panel-body" id="hud-log-box">
           <div style="font-size: 0.78rem; font-family: var(--font-mono); color: var(--hud-cyan);">
-            [SYSTEM ONLINE]: All planetary satellite connections established. Click any citadel or speak command.
+            [SYSTEM ONLINE]: 4K High-Resolution Planetary Earth textures loaded. Click any citadel or speak command.
           </div>
         </div>
       </section>
@@ -110,38 +114,63 @@
         <div id="modal-city-name" class="modal-title">CITY RECONNAISSANCE FEED</div>
         <div id="modal-camera-name" style="font-size: 0.75rem; color: var(--hud-orange);">OPTICAL CHANNEL</div>
       </div>
+      
+      <!-- Optical Mode Switcher -->
+      <div class="view-mode-tabs">
+        <button id="btn-mode-sat" class="mode-tab-btn active" onclick="switchCameraMode('sat')">🛰️ 4K SATELLITE RECON</button>
+        <button id="btn-mode-street" class="mode-tab-btn" onclick="switchCameraMode('street')">📷 OPTICAL STREET VIEW</button>
+        <button id="btn-mode-flir" class="mode-tab-btn" onclick="switchCameraMode('flir')">🌡️ THERMAL FLIR</button>
+      </div>
+
       <button id="close-modal-btn" class="close-modal-btn">&times;</button>
     </div>
 
-    <div class="camera-viewfinder">
+    <div class="camera-viewfinder" id="camera-viewfinder">
+      <!-- Top HUD Telemetry -->
       <div class="viewfinder-hud-overlay">
         <div class="rec-dot"></div>
-        <span>LIVE OPTICAL SURVEILLANCE // SATELLITE LINK ACTIVE</span>
+        <span id="cam-telemetry-text">LIVE OPTICAL SURVEILLANCE // RESOLUTION: 4K UHD // SATELLITE LINK ACTIVE</span>
       </div>
-      <iframe 
-        id="camera-stream-frame" 
-        class="camera-stream-frame" 
-        src="" 
-        allow="autoplay; encrypted-media" 
-        allowfullscreen
-      ></iframe>
+
+      <!-- Tactical Reticle -->
+      <div class="tactical-reticle">
+        <div class="reticle-box"></div>
+        <div class="reticle-line-h"></div>
+        <div class="reticle-line-v"></div>
+      </div>
+
+      <!-- Live Timestamp & Zoom HUD -->
+      <div class="viewfinder-bottom-hud">
+        <span id="hud-live-timestamp">UTC: --</span>
+        <span id="hud-zoom-level">MAG: 4.8X</span>
+        <span id="hud-sensor-type">SENSOR: HIGH-RES MULTISPECTRAL</span>
+      </div>
+
+      <!-- 4K Satellite Reconnaissance Map (Leaflet Esri 4K) -->
+      <div id="sat-map-container" class="sat-map-container"></div>
+
+      <!-- Street Optical View Image Container -->
+      <div id="street-cam-container" class="street-cam-container" style="display: none;">
+        <img id="street-cam-img" class="street-cam-img" src="" alt="Tactical Optical View" />
+      </div>
     </div>
 
+    <!-- City Dossier Metrics -->
     <div class="modal-intel-grid">
       <div class="intel-stat-box">
-        <div class="stat-label">POPULATION</div>
+        <div class="stat-label">METROPOLITAN POPULATION</div>
         <div id="stat-pop" class="stat-val">--</div>
       </div>
       <div class="intel-stat-box">
-        <div class="stat-label">LOCAL TIMESTAMP</div>
+        <div class="stat-label">LOCAL CITADEL TIMESTAMP</div>
         <div id="stat-time" class="stat-val">--</div>
       </div>
       <div class="intel-stat-box">
-        <div class="stat-label">COORDINATES</div>
+        <div class="stat-label">COORDINATES (WGS 84)</div>
         <div id="stat-coords" class="stat-val">--</div>
       </div>
       <div class="intel-stat-box">
-        <div class="stat-label">METEOROLOGY</div>
+        <div class="stat-label">METEOROLOGICAL TELEMETRY</div>
         <div id="stat-weather" class="stat-val">--</div>
       </div>
     </div>
