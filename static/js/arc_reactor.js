@@ -1,6 +1,6 @@
 /**
- * Tony Stark Arc Reactor Canvas Visualizer
- * Renders rotating electromagnetic coils, central energy core, and glowing flares.
+ * Tony Stark Arc Reactor Canvas Visualizer (White Gold Edition).
+ * Renders rotating champagne gold coils, central palladium core, and luxury gold flares.
  */
 class ArcReactorVisualizer {
   constructor(canvasId) {
@@ -28,11 +28,11 @@ class ArcReactorVisualizer {
     this.angle2 -= 0.035;
     this.pulse = (Math.sin(Date.now() * 0.005) + 1) * 0.5;
 
-    // Outer Glow Ring
+    // Outer Champagne Gold Ring
     ctx.save();
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(0, 240, 255, 0.4)";
+    ctx.strokeStyle = "rgba(197, 155, 39, 0.55)";
     ctx.lineWidth = 2;
     ctx.stroke();
 
@@ -41,10 +41,10 @@ class ArcReactorVisualizer {
     ctx.rotate(this.angle1);
     ctx.beginPath();
     ctx.arc(0, 0, r * 0.85, 0, Math.PI * 1.5);
-    ctx.strokeStyle = "#00f0ff";
+    ctx.strokeStyle = "#c59b27";
     ctx.lineWidth = 3;
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = "#00f0ff";
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = "#dfb15b";
     ctx.stroke();
     ctx.restore();
 
@@ -54,28 +54,28 @@ class ArcReactorVisualizer {
     ctx.rotate(this.angle2);
     ctx.beginPath();
     ctx.arc(0, 0, r * 0.65, 0, Math.PI);
-    ctx.strokeStyle = "#ffd700";
+    ctx.strokeStyle = "#967215";
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // 8 Electromagnetic Core Nodes
+    // 8 Electromagnetic Core Nodes in Gold
     for (let i = 0; i < 8; i++) {
       const a = (i * Math.PI) / 4;
       const nx = Math.cos(a) * (r * 0.55);
       const ny = Math.sin(a) * (r * 0.55);
       ctx.beginPath();
       ctx.arc(nx, ny, 2.5, 0, Math.PI * 2);
-      ctx.fillStyle = "#00f0ff";
+      ctx.fillStyle = "#dfb15b";
       ctx.fill();
     }
     ctx.restore();
 
-    // Central Palladium Core Bloom
+    // Central Palladium White Gold Core Bloom
     ctx.save();
     const coreGlow = ctx.createRadialGradient(cx, cy, 2, cx, cy, r * 0.45);
     coreGlow.addColorStop(0, "#ffffff");
-    coreGlow.addColorStop(0.3, "rgba(0, 240, 255, 0.9)");
-    coreGlow.addColorStop(1, "rgba(0, 240, 255, 0)");
+    coreGlow.addColorStop(0.35, "rgba(223, 177, 91, 0.9)");
+    coreGlow.addColorStop(1, "rgba(197, 155, 39, 0)");
     ctx.fillStyle = coreGlow;
     ctx.beginPath();
     ctx.arc(cx, cy, r * (0.35 + 0.08 * this.pulse), 0, Math.PI * 2);

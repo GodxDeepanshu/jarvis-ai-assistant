@@ -1,7 +1,7 @@
 """
 FastAPI Server & Central Dispatch: JARVIS Stark Industries Global Intelligence System.
-Endpoints for 3D Photorealistic Earth, Real-Time Satellite Tracking (CelesTrak/SGP4),
-Live Aircraft Vectors (OpenSky ADS-B), and Geographic News Investigation.
+Endpoints for 3D Photorealistic Earth, CelesTrak SGP4 Satellites, OpenSky ADS-B Aircraft,
+Real-Time Satellite Radar (RainViewer), Live Country Streams, and Live World News.
 """
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse
@@ -13,11 +13,13 @@ import uvicorn
 from src.satellite_tracker import SatelliteTrackingEngine
 from src.aircraft_tracker import AircraftTrackingEngine
 from src.news_intelligence import NewsIntelligenceEngine
+from src.live_streams import LiveStreamRegistry
+from src.radar_service import RadarSatelliteService
 from src.planetary_intel import PlanetaryIntelRegistry
 from src.system_telemetry import SystemTelemetryEngine
 from src.agi_engine import JarvisAGIEngine
 
-app = FastAPI(title="JARVIS Stark Industries Intelligence System", version="3.0.0")
+app = FastAPI(title="JARVIS Stark Industries Intelligence System", version="3.2.0")
 
 # Setup directories
 base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -76,6 +78,13 @@ async def get_news_events():
     return JSONResponse(content={"total": len(events), "events": events})
 
 
+@app.get("/api/news/live")
+async def get_live_world_news(category: str = "world"):
+    """Returns live breaking international news across categories."""
+    headlines = NewsIntelligenceEngine.fetch_live_world_headlines(category=category)
+    return JSONResponse(content={"category": category, "total": len(headlines), "news": headlines})
+
+
 @app.get("/api/news/investigate/{event_id}")
 async def investigate_news_event(event_id: str):
     """Returns full investigative dossier for selected news event."""
@@ -85,10 +94,25 @@ async def investigate_news_event(event_id: str):
     return JSONResponse(content=ev)
 
 
-@app.get("/api/cities")
-async def get_cities():
-    """Returns planetary citadels with coordinates and timestamps."""
-    return JSONResponse(content=PlanetaryIntelRegistry.get_all_cities())
+@app.get("/api/streams")
+async def get_all_country_streams():
+    """Returns registry of live video feeds & streams for countries worldwide."""
+    return JSONResponse(content=LiveStreamRegistry.get_all_streams())
+
+
+@app.get("/api/streams/{country_query}")
+async def get_country_stream(country_query: str):
+    """Returns live stream and YouTube direct feed for a specific country."""
+    stream = LiveStreamRegistry.find_stream(country_query)
+    if not stream:
+        return JSONResponse(status_code=404, content={"error": "Country stream not found"})
+    return JSONResponse(content=stream)
+
+
+@app.get("/api/radar")
+async def get_radar_metadata():
+    """Returns live RainViewer weather radar & real satellite infrared cloud paths."""
+    return JSONResponse(content=RadarSatelliteService.get_live_radar_metadata())
 
 
 @app.get("/api/telemetry")

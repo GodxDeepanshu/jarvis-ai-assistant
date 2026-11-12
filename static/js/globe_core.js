@@ -37,6 +37,7 @@ class StarkGlobeCore {
 
     // 2. Renderer with High-DPI support
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
+    this.renderer.setClearColor(0x000000, 0); // Transparent to show white gold background
     this.renderer.setSize(width, height);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
