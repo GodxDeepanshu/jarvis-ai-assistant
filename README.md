@@ -1,42 +1,83 @@
-# J.A.R.V.I.S. // Planetary Artificial General Intelligence
+# STARK INDUSTRIES // J.A.R.V.I.S. GLOBAL INTELLIGENCE SYSTEM
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![FastAPI](https://img.shields.io/badge/FastAPI-Production-009688.svg)](https://fastapi.tiangolo.com/)
-[![Three.js](https://img.shields.io/badge/Three.js-WebGL%20Globe-black.svg)](https://threejs.org/)
-[![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![Three.js](https://img.shields.io/badge/Three.js-Photorealistic%204K%20Earth-black.svg)](https://threejs.org/)
+[![CelesTrak](https://img.shields.io/badge/CelesTrak-SGP4%20Orbital%20Propagator-00e5ff.svg)](https://celestrak.org/)
+[![OpenSky](https://img.shields.io/badge/OpenSky-Live%20ADS--B%20Transponders-ffaa00.svg)](https://opensky-network.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Mission%20Control%20Backend-009688.svg)](https://fastapi.tiangolo.com/)
 
-An authentic Tony Stark Mark-LXXXV Holographic HUD Artificial General Intelligence (AGI) platform. Features an interactive 3D WebGL Earth globe with clickable global citadels, live streaming optical camera feeds (CCTV/panoramas), real-time global breaking news radar, biometric Arc Reactor visualizer, hardware telemetry diagnostics, and continuous conversational voice synthesis.
+An authentic Stark Industries aerospace command and situational awareness environment inspired by Tony Stark's J.A.R.V.I.S. from Iron Man. Features a photorealistic 3D Earth occupying ~75% of the viewport, authentic CelesTrak satellite tracking with mathematical SGP4 orbital propagation, real-time OpenSky Network ADS-B aircraft vectors, geographically anchored global news intelligence with deep-dive investigation dossiers, and an integrated conversational AGI agent that directly drives interface actions.
 
 ---
 
-## ⚡ Core Systems & Features
+## 🛰️ System Architecture & Core Capabilities
 
-1. **Interactive 3D Holographic Earth Globe (Three.js WebGL)**:
-   - High-fidelity glowing 3D planetary sphere with procedural lat/long wireframe, atmospheric halo glow, and rotating satellite orbit rings.
-   - Clickable 3D beacon targets across major Earth cities (Tokyo, New York, London, Paris, Dubai, Mumbai, Singapore, Sydney, Cairo, Rio de Janeiro).
-   - Raycasting detection with smooth camera coordinates tweening directly to clicked citadels.
+```
+jarvis-ai-assistant/
+├── app.py                      # FastAPI Mission Control server & central REST dispatch
+├── src/
+│   ├── satellite_tracker.py    # CelesTrak GP/TLE ingestion & SGP4 orbital propagator
+│   ├── aircraft_tracker.py     # OpenSky Network live ADS-B flight transponder vectors
+│   ├── news_intelligence.py    # Geographically anchored news radar & investigation engine
+│   ├── planetary_intel.py      # City citadels, coordinates, and local time
+│   ├── agi_engine.py           # Conversational AGI intent understanding & interface control
+│   └── system_telemetry.py     # Mission control hardware & connection telemetry
+├── static/
+│   ├── css/
+│   │   └── stark_hud.css       # Restrained aerospace dark mission control styling
+│   └── js/
+│       ├── globe_core.js       # Three.js 4K photorealistic Earth, OrbitControls & lighting
+│       ├── satellite_layer.js  # Orbital propagation, category filtering, 3D orbits
+│       ├── aircraft_layer.js   # Live flight vectors, callsigns, altitude scaling
+│       ├── news_layer.js       # Geographic event pins & Investigation Mode
+│       ├── arc_reactor.js      # Stark biometric core
+│       └── jarvis_controller.js# Master interface orchestration, voice & AI control
+├── templates/
+│   └── index.html              # 75% Earth viewport, aerospace HUD layout
+└── tests/
+    └── test_jarvis_engine.py   # Full test suite (100% passing)
+```
 
-2. **Planetary City Dossiers & Free Live Camera Feeds**:
-   - On clicking any city on the globe or speaking its name:
-     - Pops up the high-tech **Reconnaissance Optical Viewfinder HUD**.
-     - Connects to **free live streaming camera feeds** (Shibuya crossing, Times Square, Eiffel Tower, Tower Bridge, etc.).
-     - Displays real-time local timestamps, meteorology, temperature, elevation, population, and strategic geopolitical roles.
+### 1. Photorealistic 4K Earth Hero Viewport (~75% Screen)
+- **High-Resolution NASA Textures**: Seamless spherical mapping of realistic planetary surface maps (`earth_day.jpg`), revolving atmospheric cloud sphere (`earth_clouds.png`), specular ocean reflectance, and atmospheric cyan rim glow.
+- **Lighting & Space Environment**: Directional solar lighting simulating realistic day/night terminator lines with deep space starfield.
+- **Restrained Aerospace Aesthetic**: Dark space background (`#01040a`), fine technical typography, monospace telemetry counters, thin dividers, and restrained cyan (`#00e5ff`), gold (`#ffd700`), and amber (`#ffaa00`) accents.
 
-3. **Global News Radar (Breaking Earth News Feed)**:
-   - Aggregates top real-time Earth events across Geopolitics, Deep Space & Astrophysics (James Webb, NASA/ESA), Fusion Energy (ITER), AI/Neural Swarms, and Climate.
-   - Continuous holographic ticker tape streaming along the bottom HUD.
+### 2. Global Satellite Tracking (Authentic CelesTrak & SGP4)
+- **Real Orbital Propagation**: Uses the standard python `sgp4` library to compute geodetic positions $(\text{lat}, \text{lon})$, altitude (km), and orbital speed (km/s) from live CelesTrak Two-Line Elements (TLEs).
+- **Orbital Spectrum Categories**:
+  - Space Stations (ISS, Tiangong)
+  - Earth Observation (Landsat, Sentinel)
+  - Navigation (GPS, GLONASS)
+  - Weather (NOAA, Himawari)
+  - Communications (Starlink, OneWeb)
+  - Science (Hubble)
+- **3D Trajectory Projection**: Click any satellite or say *"Track the International Space Station"* to project its full 90-minute 3D orbital tube on Earth.
 
-4. **Biometric Arc Reactor Core Visualizer**:
-   - Canvas-rendered electromagnetic Arc Reactor with counter-rotating energy segments, palladium core glow bloom, and audio-reactive frequency pulsation.
+### 3. Global Aircraft Tracking (OpenSky Network ADS-B)
+- **Live Transponder Telemetry**: Connects to OpenSky Network to track airborne commercial and cargo flights.
+- **Flight Vectors**: Displays callsign, ICAO24, origin country, true heading orientation, altitude in feet/meters, and ground speed in knots/kmh.
 
-5. **Conversational AGI Voice Engine**:
-   - Voice input via Web Speech Recognition with microphone controls.
-   - Voice output via SpeechSynthesis in J.A.R.V.I.S.'s signature dignified British tone.
-   - Natural language intent classification for city surveillance, news briefings, hardware diagnostics, and Stark armor protocols.
+### 4. Global News Intelligence & Investigation Mode
+- Geographically anchored world events with category-colored tactical beacon pins.
+- **News Investigation Mode**:
+  - **What Happened**: Clear factual situation summary.
+  - **Where & When**: Precise coordinates, location name, and timestamp.
+  - **Why It Matters**: Strategic and geopolitical significance.
+  - **Key Organizations & Entities**: Highlighted tags.
+  - **Chronological Timeline**: Step-by-step event sequence.
+  - **Confirmed Facts vs. Speculation**: Rigorous intelligence verification.
+  - **Direct Source Repository**: One-click link to original source.
 
-6. **Hardware Telemetry Diagnostics**:
-   - Real-time CPU utilization, RAM usage, core frequency, Arc Reactor power %, and host uptime.
+### 5. Conversational J.A.R.V.I.S. AI Assistant (Actions, Not Just Text)
+- Speech recognition and speech synthesis in J.A.R.V.I.S.'s signature British cadence.
+- Context-aware command understanding that **actually drives the visual interface**:
+  - *"Track the International Space Station"* -> Highlights ISS, renders its orbit, flies camera to it, and opens orbital dossier.
+  - *"Show me satellites above India"* -> Rotates globe to India and filters passing orbital objects.
+  - *"Show aircraft"* -> Toggles live OpenSky flight transponder vectors.
+  - *"Give me a global intelligence briefing"* -> Summarizes top global SITREP reports.
+  - *"Investigate this breaking news"* -> Opens complete investigative dossier.
 
 ---
 
@@ -52,27 +93,19 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 2. Launch Holographic Command Center
+### 2. Launch Mission Control
 ```bash
 python app.py
 ```
 Open **[http://localhost:8000](http://localhost:8000)** in your browser.
 
-- Click on any city on the 3D globe or left sidebar to access its live camera feed.
-- Click the **microphone** icon to speak commands directly to J.A.R.V.I.S.!
+- Click on any **Satellite**, **Aircraft**, or **News Pin** to inspect its intelligence file.
+- Speak commands or type into the bottom command bar to command J.A.R.V.I.S. directly!
 
-### 3. Run Test Suite
+### 3. Run Automated Tests
 ```bash
 pytest tests/ -v
 ```
-
----
-
-## 🐳 Docker Deployment
-```bash
-docker-compose up -d
-```
-Access at [http://localhost:8000](http://localhost:8000).
 
 ---
 

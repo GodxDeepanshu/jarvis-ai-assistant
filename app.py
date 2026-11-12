@@ -1,7 +1,7 @@
 """
-FastAPI Server & Central Dispatch: JARVIS Planetary AGI Command Hub.
-Serves Tony Stark 3D Holographic HUD, WebSockets/REST APIs for Live City Cameras,
-Real-Time Earth News Ticker, and Voice Synthesis.
+FastAPI Server & Central Dispatch: JARVIS Stark Industries Global Intelligence System.
+Endpoints for 3D Photorealistic Earth, Real-Time Satellite Tracking (CelesTrak/SGP4),
+Live Aircraft Vectors (OpenSky ADS-B), and Geographic News Investigation.
 """
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse
@@ -10,12 +10,14 @@ from pydantic import BaseModel
 import os
 import uvicorn
 
+from src.satellite_tracker import SatelliteTrackingEngine
+from src.aircraft_tracker import AircraftTrackingEngine
+from src.news_intelligence import NewsIntelligenceEngine
 from src.planetary_intel import PlanetaryIntelRegistry
-from src.global_news_radar import GlobalNewsRadar
 from src.system_telemetry import SystemTelemetryEngine
 from src.agi_engine import JarvisAGIEngine
 
-app = FastAPI(title="JARVIS Planetary AGI", version="2.0.0")
+app = FastAPI(title="JARVIS Stark Industries Intelligence System", version="3.0.0")
 
 # Setup directories
 base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -37,41 +39,67 @@ class CommandRequest(BaseModel):
 
 @app.get("/")
 async def serve_hud():
-    """Renders the Tony Stark 3D Holographic HUD."""
+    """Renders the Stark Industries Command & Intelligence Centre HUD."""
     index_path = os.path.join(templates_dir, "index.html")
     return FileResponse(index_path, media_type="text/html")
 
 
+@app.get("/api/satellites")
+async def get_satellites():
+    """Returns propagated SGP4 state vectors for active CelesTrak orbital objects."""
+    sats = SatelliteTrackingEngine.get_all_satellite_states()
+    return JSONResponse(content={"total": len(sats), "satellites": sats})
+
+
+@app.get("/api/satellites/trajectory/{norad_id}")
+async def get_satellite_trajectory(norad_id: str):
+    """Calculates and returns full 3D orbital trajectory arc for selected satellite."""
+    sats = SatelliteTrackingEngine.fetch_live_celestrak()
+    target = next((s for s in sats if s["norad_id"] == norad_id), None)
+    if not target:
+        return JSONResponse(status_code=404, content={"error": "NORAD ID not found in active catalog"})
+    arc = SatelliteTrackingEngine.compute_orbital_trajectory_arc(target)
+    return JSONResponse(content={"norad_id": norad_id, "name": target["name"], "trajectory": arc})
+
+
+@app.get("/api/aircraft")
+async def get_aircraft():
+    """Returns live OpenSky Network ADS-B flight transponder telemetry."""
+    flights = AircraftTrackingEngine.fetch_live_flights()
+    return JSONResponse(content={"total": len(flights), "flights": flights})
+
+
+@app.get("/api/news/events")
+async def get_news_events():
+    """Returns geographically anchored global intelligence events."""
+    events = NewsIntelligenceEngine.get_all_events()
+    return JSONResponse(content={"total": len(events), "events": events})
+
+
+@app.get("/api/news/investigate/{event_id}")
+async def investigate_news_event(event_id: str):
+    """Returns full investigative dossier for selected news event."""
+    ev = NewsIntelligenceEngine.get_event(event_id)
+    if not ev:
+        return JSONResponse(status_code=404, content={"error": "Intelligence event not found"})
+    return JSONResponse(content=ev)
+
+
 @app.get("/api/cities")
 async def get_cities():
-    """Returns all registered global cities with coordinates and camera streams."""
+    """Returns planetary citadels with coordinates and timestamps."""
     return JSONResponse(content=PlanetaryIntelRegistry.get_all_cities())
-
-
-@app.get("/api/city/{city_id}")
-async def get_city_dossier(city_id: str):
-    """Returns intelligence dossier and live camera stream for a specific city."""
-    city = PlanetaryIntelRegistry.get_city(city_id)
-    if not city:
-        return JSONResponse(status_code=404, content={"error": "City not found on planetary registry"})
-    return JSONResponse(content=city)
-
-
-@app.get("/api/news")
-async def get_global_news():
-    """Returns live planetary news radar headlines."""
-    return JSONResponse(content=GlobalNewsRadar.fetch_live_headlines())
 
 
 @app.get("/api/telemetry")
 async def get_telemetry():
-    """Returns live host hardware & Arc Reactor telemetry."""
+    """Returns host hardware & Stark Arc Reactor telemetry."""
     return JSONResponse(content=SystemTelemetryEngine.get_hardware_telemetry())
 
 
 @app.post("/api/command")
 async def execute_command(req: CommandRequest):
-    """Processes spoken or typed natural language query through the AGI engine."""
+    """Processes spoken or typed natural language command through JARVIS AGI."""
     result = agi.process_command(req.query)
     return JSONResponse(content=result)
 

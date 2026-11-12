@@ -3,63 +3,121 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>J.A.R.V.I.S. // Planetary Artificial General Intelligence</title>
+  <title>STARK INDUSTRIES // J.A.R.V.I.S. GLOBAL INTELLIGENCE SYSTEM</title>
   
-  <!-- Holographic HUD Styling -->
+  <!-- Mission Control Aerospace Styling -->
   <link rel="stylesheet" href="/static/css/stark_hud.css">
 
-  <!-- Leaflet 4K Satellite Mapping CDN -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <!-- Three.js CDN for 3D 4K Earth Globe -->
+  <!-- Three.js CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
   <div class="hud-container">
     
-    <!-- Top Header HUD -->
+    <!-- Top System Telemetry Bar -->
     <header class="hud-header">
       <div class="hud-title-group">
-        <canvas id="arc-reactor-header" class="arc-mini-canvas" width="48" height="48"></canvas>
+        <canvas id="arc-reactor-header" class="arc-mini-canvas" width="42" height="42"></canvas>
         <div>
-          <div class="hud-title">J.A.R.V.I.S. // STARK AGI</div>
-          <div class="hud-subtitle">Planetary Defense & Reconnaissance System</div>
+          <div class="hud-title">STARK INDUSTRIES // J.A.R.V.I.S.</div>
+          <div class="hud-subtitle">GLOBAL INTELLIGENCE & SITUATIONAL AWARENESS SYSTEM</div>
         </div>
       </div>
 
       <div class="header-telemetry-strip">
+        <div class="telem-pill">LOCAL: <span id="clock-local" class="val">--:--:--</span></div>
+        <div class="telem-pill">UTC: <span id="clock-utc" class="val">--:--:-- UTC</span></div>
+        <div class="telem-pill">ORBITAL: <span id="status-celestrak" class="val">CONNECTING...</span></div>
+        <div class="telem-pill">ADS-B: <span id="status-opensky" class="val">CONNECTING...</span></div>
         <div class="telem-pill">ARC POWER: <span id="telem-power" class="val">100%</span></div>
-        <div class="telem-pill">CPU LOAD: <span id="telem-cpu" class="val">--</span></div>
-        <div class="telem-pill">RAM USAGE: <span id="telem-ram" class="val">--</span></div>
-        <div class="telem-pill">UPTIME: <span id="telem-uptime" class="val">--</span></div>
       </div>
     </header>
 
-    <!-- Main 3-Column Work Area -->
+    <!-- Main View Area (Earth 75% focus + Left/Right Control Panes) -->
     <main class="hud-main">
       
-      <!-- Left Panel: Planetary Surveillance Registry -->
-      <section class="hud-panel">
+      <!-- Left Navigation & Layer Control Panel -->
+      <aside class="hud-panel left-panel">
         <div class="panel-header">
-          <span>🌍 Planetary Citadels</span>
-          <span style="font-size: 0.7rem; color: var(--hud-orange);">LIVE SENSORS</span>
+          <span>MISSION DIRECTIVES</span>
+          <span style="font-size: 0.68rem; color: var(--hud-cyan);">OPERATIONAL</span>
         </div>
-        <div class="panel-body" id="cities-list">
-          <!-- Dynamic City Cards Render Here -->
-        </div>
-      </section>
 
-      <!-- Center Viewport: 3D 4K Earth Globe & Voice HUD -->
+        <div class="panel-body">
+          
+          <!-- Layer Toggles -->
+          <div class="section-block">
+            <div class="section-title">INTELLIGENCE LAYERS</div>
+            <div class="btn-group-column">
+              <button id="btn-toggle-sats" class="layer-toggle-btn active" onclick="toggleLayer('satellites')">
+                <span>🛰️ SATELLITE NETWORK</span>
+                <span id="count-satellites" class="badge-count">--</span>
+              </button>
+              <button id="btn-toggle-planes" class="layer-toggle-btn active" onclick="toggleLayer('aircraft')">
+                <span>✈️ AIRCRAFT TRACKING (ADS-B)</span>
+                <span id="count-aircraft" class="badge-count">--</span>
+              </button>
+              <button id="btn-toggle-news" class="layer-toggle-btn active" onclick="toggleLayer('news')">
+                <span>🌍 GEOGRAPHIC NEWS RADAR</span>
+                <span id="count-news" class="badge-count">--</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Satellite Categories -->
+          <div class="section-block">
+            <div class="section-title">SATELLITE SPECTRUM</div>
+            <div class="filter-pills-grid">
+              <button id="btn-cat-all" class="cat-filter-btn active" onclick="filterSatellites('all')">ALL</button>
+              <button id="btn-cat-space_station" class="cat-filter-btn" onclick="filterSatellites('space_station')">STATIONS</button>
+              <button id="btn-cat-earth_observation" class="cat-filter-btn" onclick="filterSatellites('earth_observation')">EARTH OBS</button>
+              <button id="btn-cat-navigation" class="cat-filter-btn" onclick="filterSatellites('navigation')">NAVIGATION</button>
+              <button id="btn-cat-weather" class="cat-filter-btn" onclick="filterSatellites('weather')">WEATHER</button>
+              <button id="btn-cat-communications" class="cat-filter-btn" onclick="filterSatellites('communications')">COMMS</button>
+            </div>
+          </div>
+
+          <!-- Quick Geographic Exploration -->
+          <div class="section-block">
+            <div class="section-title">GEOGRAPHIC EXPLORER</div>
+            <div class="geo-links-grid">
+              <button class="geo-btn" onclick="quickFly(20.5937, 78.9629, 'India')">🇮🇳 INDIA</button>
+              <button class="geo-btn" onclick="quickFly(37.0902, -95.7129, 'North America')">🇺🇸 NORTH AMERICA</button>
+              <button class="geo-btn" onclick="quickFly(54.5260, 15.2551, 'Europe')">🇪🇺 EUROPE</button>
+              <button class="geo-btn" onclick="quickFly(35.6762, 139.6503, 'Tokyo')">🇯🇵 TOKYO</button>
+              <button class="geo-btn" onclick="quickFly(25.2048, 55.2708, 'Dubai')">🇦🇪 DUBAI</button>
+              <button class="geo-btn" onclick="quickFly(1.3521, 103.8198, 'Singapore')">🇸🇬 SINGAPORE</button>
+            </div>
+          </div>
+
+          <!-- Live Situational News Feed List -->
+          <div class="section-block" style="flex: 1; display: flex; flex-direction: column;">
+            <div class="section-title">SITUATIONAL NEWS RADAR</div>
+            <div id="news-feed-list" class="news-list-container">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+        </div>
+      </aside>
+
+      <!-- Center 3D Earth Viewport (Hero) -->
       <section class="globe-viewport">
         <div id="three-globe-container"></div>
-        <div class="globe-reticle-overlay"></div>
-        <div class="globe-reticle-crosshair"></div>
+        
+        <!-- Aerospace Crosshair Reticle -->
+        <div class="reticle-compass">
+          <div class="compass-marker marker-n">N 000°</div>
+          <div class="compass-marker marker-e">E 090°</div>
+          <div class="compass-marker marker-s">S 180°</div>
+          <div class="compass-marker marker-w">W 270°</div>
+          <div class="reticle-circle-inner"></div>
+        </div>
 
-        <!-- Voice & Command Bar -->
-        <div class="voice-command-bar">
-          <button id="mic-btn" class="mic-btn" title="Click to speak with J.A.R.V.I.S.">🎤</button>
+        <!-- Bottom JARVIS Command & Voice Console -->
+        <div class="jarvis-command-bar">
+          <button id="mic-btn" class="mic-btn" title="Voice command input for J.A.R.V.I.S.">🎤</button>
           
           <div class="audio-wave-container">
             <div class="wave-bar"></div>
@@ -69,116 +127,57 @@
             <div class="wave-bar"></div>
           </div>
 
-          <form id="command-form" style="display: flex; flex: 1; align-items: center; gap: 10px;">
+          <form id="command-form" style="display: flex; flex: 1; align-items: center; gap: 12px;">
             <input 
               type="text" 
               id="command-input" 
               class="command-input" 
-              placeholder="Ask J.A.R.V.I.S. anything or speak command..."
+              placeholder="Ask JARVIS (e.g. 'Track the International Space Station', 'Show satellites above India', 'Give me a global briefing')..."
               autocomplete="off"
             />
-            <button type="submit" class="send-btn">TRANSMIT</button>
+            <button type="submit" class="transmit-btn">TRANSMIT</button>
           </form>
         </div>
       </section>
 
-      <!-- Right Panel: AGI Log & Neural Reasoning -->
-      <section class="hud-panel">
+      <!-- Right Dynamic Intelligence Panel -->
+      <aside class="hud-panel right-panel">
         <div class="panel-header">
-          <span>⚡ AGI Neural Log</span>
-          <span style="font-size: 0.7rem; color: var(--hud-cyan);">STARK PROTOCOL</span>
+          <span id="dossier-title">SITUATIONAL INTELLIGENCE</span>
+          <span style="font-size: 0.68rem; color: var(--hud-orange);">STARK INTEL</span>
         </div>
-        <div class="panel-body" id="hud-log-box">
-          <div style="font-size: 0.78rem; font-family: var(--font-mono); color: var(--hud-cyan);">
-            [SYSTEM ONLINE]: 4K High-Resolution Planetary Earth textures loaded. Click any citadel or speak command.
+
+        <div class="panel-body" id="right-dossier-body">
+          <div class="empty-dossier-state">
+            <div style="font-size: 2rem; margin-bottom: 12px; color: var(--hud-cyan);">🌐</div>
+            <div style="font-weight: bold; margin-bottom: 6px; letter-spacing: 1px;">PLANETARY SURVEILLANCE ACTIVE</div>
+            <p style="font-size: 0.78rem; line-height: 1.5; color: #8ba8be;">
+              Click any orbital satellite, airborne flight transponder, or geographic news pin on the 3D Earth, or issue voice commands to J.A.R.V.I.S.
+            </p>
           </div>
         </div>
-      </section>
+
+        <!-- AGI Execution Log -->
+        <div class="panel-footer-log">
+          <div class="log-title">JARVIS AGI DISPATCH LOG</div>
+          <div id="hud-log-box" class="log-entries-box">
+            <div style="color: var(--hud-cyan); font-family: var(--font-mono); font-size: 0.72rem;">
+              [SYSTEM INITIALIZED]: CelesTrak SGP4 & OpenSky telemetry synchronized.
+            </div>
+          </div>
+        </div>
+      </aside>
 
     </main>
 
-    <!-- Footer: Real-Time Global Breaking News Radar Ticker -->
-    <footer class="hud-footer-ticker">
-      <div class="ticker-label">EARTH NEWS RADAR</div>
-      <div class="ticker-marquee" id="ticker-content">
-        INITIALIZING ORBITAL NEWS SURVEILLANCE SENSORS... SCANNING EARTH HEADLINES...
-      </div>
-    </footer>
-
-  </div>
-
-  <!-- City Live Camera & Intelligence Modal -->
-  <div id="camera-modal" class="camera-modal">
-    <div class="modal-header">
-      <div>
-        <div id="modal-city-name" class="modal-title">CITY RECONNAISSANCE FEED</div>
-        <div id="modal-camera-name" style="font-size: 0.75rem; color: var(--hud-orange);">OPTICAL CHANNEL</div>
-      </div>
-      
-      <!-- Optical Mode Switcher -->
-      <div class="view-mode-tabs">
-        <button id="btn-mode-sat" class="mode-tab-btn active" onclick="switchCameraMode('sat')">🛰️ 4K SATELLITE RECON</button>
-        <button id="btn-mode-street" class="mode-tab-btn" onclick="switchCameraMode('street')">📷 OPTICAL STREET VIEW</button>
-        <button id="btn-mode-flir" class="mode-tab-btn" onclick="switchCameraMode('flir')">🌡️ THERMAL FLIR</button>
-      </div>
-
-      <button id="close-modal-btn" class="close-modal-btn">&times;</button>
-    </div>
-
-    <div class="camera-viewfinder" id="camera-viewfinder">
-      <!-- Top HUD Telemetry -->
-      <div class="viewfinder-hud-overlay">
-        <div class="rec-dot"></div>
-        <span id="cam-telemetry-text">LIVE OPTICAL SURVEILLANCE // RESOLUTION: 4K UHD // SATELLITE LINK ACTIVE</span>
-      </div>
-
-      <!-- Tactical Reticle -->
-      <div class="tactical-reticle">
-        <div class="reticle-box"></div>
-        <div class="reticle-line-h"></div>
-        <div class="reticle-line-v"></div>
-      </div>
-
-      <!-- Live Timestamp & Zoom HUD -->
-      <div class="viewfinder-bottom-hud">
-        <span id="hud-live-timestamp">UTC: --</span>
-        <span id="hud-zoom-level">MAG: 4.8X</span>
-        <span id="hud-sensor-type">SENSOR: HIGH-RES MULTISPECTRAL</span>
-      </div>
-
-      <!-- 4K Satellite Reconnaissance Map (Leaflet Esri 4K) -->
-      <div id="sat-map-container" class="sat-map-container"></div>
-
-      <!-- Street Optical View Image Container -->
-      <div id="street-cam-container" class="street-cam-container" style="display: none;">
-        <img id="street-cam-img" class="street-cam-img" src="" alt="Tactical Optical View" />
-      </div>
-    </div>
-
-    <!-- City Dossier Metrics -->
-    <div class="modal-intel-grid">
-      <div class="intel-stat-box">
-        <div class="stat-label">METROPOLITAN POPULATION</div>
-        <div id="stat-pop" class="stat-val">--</div>
-      </div>
-      <div class="intel-stat-box">
-        <div class="stat-label">LOCAL CITADEL TIMESTAMP</div>
-        <div id="stat-time" class="stat-val">--</div>
-      </div>
-      <div class="intel-stat-box">
-        <div class="stat-label">COORDINATES (WGS 84)</div>
-        <div id="stat-coords" class="stat-val">--</div>
-      </div>
-      <div class="intel-stat-box">
-        <div class="stat-label">METEOROLOGICAL TELEMETRY</div>
-        <div id="stat-weather" class="stat-val">--</div>
-      </div>
-    </div>
   </div>
 
   <!-- Scripts -->
   <script src="/static/js/arc_reactor.js"></script>
-  <script src="/static/js/globe_visualizer.js"></script>
-  <script src="/static/js/jarvis_hud.js"></script>
+  <script src="/static/js/satellite_layer.js"></script>
+  <script src="/static/js/aircraft_layer.js"></script>
+  <script src="/static/js/news_layer.js"></script>
+  <script src="/static/js/globe_core.js"></script>
+  <script src="/static/js/jarvis_controller.js"></script>
 </body>
 </html>
