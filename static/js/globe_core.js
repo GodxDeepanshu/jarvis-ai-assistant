@@ -1,5 +1,6 @@
 /**
  * Globe Core Engine: Photorealistic 4K Earth, Atmosphere, Starfield & Multi-Layer Raycasting.
+ * Incorporates Anisotropic Texture Filtering and Atmospheric Shading.
  */
 class StarkGlobeCore {
   constructor(containerId, onSelectObjectCallback) {
@@ -31,29 +32,29 @@ class StarkGlobeCore {
 
     // 1. Scene & Camera
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 3000);
+    this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 3500);
     this.camera.position.z = 280;
 
-    // 2. Renderer
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    // 2. Renderer with High-DPI support
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
     this.renderer.setSize(width, height);
-    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.2;
+    this.renderer.toneMappingExposure = 1.25;
     this.container.appendChild(this.renderer.domElement);
 
     // 3. Space Starfield Background
     this.createStarfield();
 
-    // 4. Photorealistic Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+    // 4. Photorealistic Directional & Ambient Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.35);
     this.scene.add(ambientLight);
 
-    const sunLight = new THREE.DirectionalLight(0xffffff, 2.0);
-    sunLight.position.set(350, 180, 250);
+    const sunLight = new THREE.DirectionalLight(0xffffff, 2.2);
+    sunLight.position.set(380, 200, 260);
     this.scene.add(sunLight);
 
-    const rimLight = new THREE.DirectionalLight(0x00f0ff, 0.9);
+    const rimLight = new THREE.DirectionalLight(0x00f0ff, 0.75);
     rimLight.position.set(-350, -120, -250);
     this.scene.add(rimLight);
 
@@ -61,34 +62,41 @@ class StarkGlobeCore {
     this.earthGroup = new THREE.Group();
     this.scene.add(this.earthGroup);
 
-    // 6. 4K NASA Blue Marble Earth Sphere
+    // 6. 4K Earth Core with Maximum Anisotropic Texture Filtering
+    const maxAnisotropy = this.renderer.capabilities.getMaxAnisotropy();
     const textureLoader = new THREE.TextureLoader();
-    const earthGeo = new THREE.SphereGeometry(this.globeRadius, 64, 64);
+
     const dayTexture = textureLoader.load("/static/textures/earth_day.jpg");
+    dayTexture.anisotropy = maxAnisotropy;
+    dayTexture.generateMipmaps = true;
+    dayTexture.minFilter = THREE.LinearMipmapLinearFilter;
+    dayTexture.magFilter = THREE.LinearFilter;
     dayTexture.wrapS = THREE.ClampToEdgeWrapping;
     dayTexture.wrapT = THREE.ClampToEdgeWrapping;
 
+    const earthGeo = new THREE.SphereGeometry(this.globeRadius, 96, 96);
     const earthMat = new THREE.MeshStandardMaterial({
       map: dayTexture,
-      roughness: 0.65,
+      roughness: 0.62,
       metalness: 0.08,
     });
     const earthMesh = new THREE.Mesh(earthGeo, earthMat);
     this.earthGroup.add(earthMesh);
 
     // 7. Revolving Clouds Sphere
-    const cloudGeo = new THREE.SphereGeometry(this.globeRadius + 1.2, 64, 64);
     const cloudTexture = textureLoader.load("/static/textures/earth_clouds.png");
+    cloudTexture.anisotropy = maxAnisotropy;
+    const cloudGeo = new THREE.SphereGeometry(this.globeRadius + 1.2, 80, 80);
     const cloudMat = new THREE.MeshStandardMaterial({
       map: cloudTexture,
       transparent: true,
-      opacity: 0.45,
+      opacity: 0.42,
       blending: THREE.AdditiveBlending,
     });
     this.cloudsMesh = new THREE.Mesh(cloudGeo, cloudMat);
     this.earthGroup.add(this.cloudsMesh);
 
-    // 8. Atmospheric Halo Shell
+    // 8. Atmospheric Cyan Halo Shell
     const glowGeo = new THREE.SphereGeometry(this.globeRadius + 3.8, 64, 64);
     const glowMat = new THREE.MeshBasicMaterial({
       color: 0x00c8ff,
@@ -99,12 +107,12 @@ class StarkGlobeCore {
     const glowMesh = new THREE.Mesh(glowGeo, glowMat);
     this.earthGroup.add(glowMesh);
 
-    // 9. Attach Layers
+    // 9. Attach Satellite, Aircraft, and News Layers
     this.satelliteLayer = new SatelliteLayer(this.scene, this.earthGroup, this.globeRadius, this.onSelectObject);
     this.aircraftLayer = new AircraftLayer(this.scene, this.earthGroup, this.globeRadius, this.onSelectObject);
     this.newsLayer = new NewsIntelligenceLayer(this.scene, this.earthGroup, this.globeRadius, this.onSelectObject);
 
-    // 10. Event Listeners
+    // 10. Setup User Interaction
     this.setupEvents();
     this.animate = this.animate.bind(this);
     requestAnimationFrame(this.animate);
@@ -112,17 +120,17 @@ class StarkGlobeCore {
 
   createStarfield() {
     const starGeo = new THREE.BufferGeometry();
-    const starCount = 1800;
+    const starCount = 2000;
     const positions = new Float32Array(starCount * 3);
 
     for (let i = 0; i < starCount * 3; i += 3) {
-      positions[i] = (Math.random() - 0.5) * 2200;
-      positions[i + 1] = (Math.random() - 0.5) * 2200;
-      positions[i + 2] = (Math.random() - 0.5) * 2200;
+      positions[i] = (Math.random() - 0.5) * 2400;
+      positions[i + 1] = (Math.random() - 0.5) * 2400;
+      positions[i + 2] = (Math.random() - 0.5) * 2400;
     }
 
     starGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    const starMat = new THREE.PointsMaterial({ color: 0x88bbdd, size: 1.2, transparent: true, opacity: 0.7 });
+    const starMat = new THREE.PointsMaterial({ color: 0x90c0e0, size: 1.2, transparent: true, opacity: 0.75 });
     const starField = new THREE.Points(starGeo, starMat);
     this.scene.add(starField);
   }
@@ -159,7 +167,19 @@ class StarkGlobeCore {
     el.addEventListener("click", () => {
       this.raycaster.setFromCamera(this.mouse, this.camera);
 
-      // Check news markers
+      // 1. Check Aircraft (realistic 3D jetliners)
+      if (this.aircraftLayer && this.aircraftLayer.visible) {
+        const planeHits = this.raycaster.intersectObjects(this.aircraftLayer.flightMeshes, true);
+        if (planeHits.length > 0) {
+          const hit = this.findParentUserData(planeHits[0].object);
+          if (hit && hit.flightData) {
+            this.onSelectObject("aircraft", hit.flightData);
+            return;
+          }
+        }
+      }
+
+      // 2. Check News Markers
       if (this.newsLayer && this.newsLayer.visible) {
         const newsHits = this.raycaster.intersectObjects(this.newsLayer.eventMeshes, true);
         if (newsHits.length > 0) {
@@ -171,7 +191,7 @@ class StarkGlobeCore {
         }
       }
 
-      // Check satellites
+      // 3. Check Satellites
       if (this.satelliteLayer && this.satelliteLayer.visible) {
         const satHits = this.raycaster.intersectObjects(this.satelliteLayer.satMeshes, true);
         if (satHits.length > 0) {
@@ -182,26 +202,14 @@ class StarkGlobeCore {
           }
         }
       }
-
-      // Check aircraft
-      if (this.aircraftLayer && this.aircraftLayer.visible) {
-        const planeHits = this.raycaster.intersectObjects(this.aircraftLayer.flightMeshes, true);
-        if (planeHits.length > 0) {
-          const hit = this.findParentUserData(planeHits[0].object);
-          if (hit && hit.flightData) {
-            this.onSelectObject("aircraft", hit.flightData);
-            return;
-          }
-        }
-      }
     });
 
-    // Mouse Wheel Zoom
+    // Smooth Mouse Wheel Zoom
     el.addEventListener("wheel", (e) => {
       e.preventDefault();
       this.camera.position.z = THREE.MathUtils.clamp(
         this.camera.position.z + e.deltaY * 0.12,
-        135,
+        130,
         500
       );
     });
@@ -227,7 +235,7 @@ class StarkGlobeCore {
     return null;
   }
 
-  flyToCoordinates(lat, lon, zoomLevel = 220) {
+  flyToCoordinates(lat, lon, zoomLevel = 210) {
     const phi = (90 - lat) * (Math.PI / 180);
     const theta = (lon + 180) * (Math.PI / 180);
 
