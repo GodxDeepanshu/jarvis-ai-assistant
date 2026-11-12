@@ -4,9 +4,8 @@ Serves Tony Stark 3D Holographic HUD, WebSockets/REST APIs for Live City Cameras
 Real-Time Earth News Ticker, and Voice Synthesis.
 """
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import os
 import uvicorn
@@ -27,7 +26,6 @@ os.makedirs(static_dir, exist_ok=True)
 os.makedirs(templates_dir, exist_ok=True)
 
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
-templates = Jinja2Templates(directory=templates_dir)
 
 # Initialize AGI Brain
 agi = JarvisAGIEngine()
@@ -37,10 +35,11 @@ class CommandRequest(BaseModel):
     query: str
 
 
-@app.get("/", response_class=HTMLResponse)
-async def serve_hud(request: Request):
+@app.get("/")
+async def serve_hud():
     """Renders the Tony Stark 3D Holographic HUD."""
-    return templates.TemplateResponse("index.html", {"request": request})
+    index_path = os.path.join(templates_dir, "index.html")
+    return FileResponse(index_path, media_type="text/html")
 
 
 @app.get("/api/cities")
