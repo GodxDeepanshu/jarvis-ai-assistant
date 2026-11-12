@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  jarvis-ai-assistant:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jarvis-ai-assistant
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped

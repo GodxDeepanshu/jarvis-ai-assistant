@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>J.A.R.V.I.S. // Planetary Artificial General Intelligence</title>
+  
+  <!-- Holographic HUD Styling -->
+  <link rel="stylesheet" href="/static/css/stark_hud.css">
+
+  <!-- Three.js CDN for 3D Earth Globe -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+  <div class="hud-container">
+    
+    <!-- Top Header HUD -->
+    <header class="hud-header">
+      <div class="hud-title-group">
+        <canvas id="arc-reactor-header" class="arc-mini-canvas" width="48" height="48"></canvas>
+        <div>
+          <div class="hud-title">J.A.R.V.I.S. // STARK AGI</div>
+          <div class="hud-subtitle">Planetary Defense & Reconnaissance System</div>
+        </div>
+      </div>
+
+      <div class="header-telemetry-strip">
+        <div class="telem-pill">ARC POWER: <span id="telem-power" class="val">100%</span></div>
+        <div class="telem-pill">CPU LOAD: <span id="telem-cpu" class="val">--</span></div>
+        <div class="telem-pill">RAM USAGE: <span id="telem-ram" class="val">--</span></div>
+        <div class="telem-pill">UPTIME: <span id="telem-uptime" class="val">--</span></div>
+      </div>
+    </header>
+
+    <!-- Main 3-Column Work Area -->
+    <main class="hud-main">
+      
+      <!-- Left Panel: Planetary Surveillance Registry -->
+      <section class="hud-panel">
+        <div class="panel-header">
+          <span>🌍 Planetary Citadels</span>
+          <span style="font-size: 0.7rem; color: var(--hud-orange);">LIVE OPTICALS</span>
+        </div>
+        <div class="panel-body" id="cities-list">
+          <!-- Dynamic City Cards Render Here -->
+        </div>
+      </section>
+
+      <!-- Center Viewport: 3D Earth Globe & Voice HUD -->
+      <section class="globe-viewport">
+        <div id="three-globe-container"></div>
+        <div class="globe-reticle-overlay"></div>
+        <div class="globe-reticle-crosshair"></div>
+
+        <!-- Voice & Command Bar -->
+        <div class="voice-command-bar">
+          <button id="mic-btn" class="mic-btn" title="Click to speak with J.A.R.V.I.S.">🎤</button>
+          
+          <div class="audio-wave-container">
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+          </div>
+
+          <form id="command-form" style="display: flex; flex: 1; align-items: center; gap: 10px;">
+            <input 
+              type="text" 
+              id="command-input" 
+              class="command-input" 
+              placeholder="Ask J.A.R.V.I.S. anything or speak command..."
+              autocomplete="off"
+            />
+            <button type="submit" class="send-btn">TRANSMIT</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Right Panel: AGI Log & Neural Reasoning -->
+      <section class="hud-panel">
+        <div class="panel-header">
+          <span>⚡ AGI Neural Log</span>
+          <span style="font-size: 0.7rem; color: var(--hud-cyan);">STARK PROTOCOL</span>
+        </div>
+        <div class="panel-body" id="hud-log-box">
+          <div style="font-size: 0.78rem; font-family: var(--font-mono); color: var(--hud-cyan);">
+            [SYSTEM ONLINE]: All planetary satellite connections established. Click any citadel or speak command.
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer: Real-Time Global Breaking News Radar Ticker -->
+    <footer class="hud-footer-ticker">
+      <div class="ticker-label">EARTH NEWS RADAR</div>
+      <div class="ticker-marquee" id="ticker-content">
+        INITIALIZING ORBITAL NEWS SURVEILLANCE SENSORS... SCANNING EARTH HEADLINES...
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- City Live Camera & Intelligence Modal -->
+  <div id="camera-modal" class="camera-modal">
+    <div class="modal-header">
+      <div>
+        <div id="modal-city-name" class="modal-title">CITY RECONNAISSANCE FEED</div>
+        <div id="modal-camera-name" style="font-size: 0.75rem; color: var(--hud-orange);">OPTICAL CHANNEL</div>
+      </div>
+      <button id="close-modal-btn" class="close-modal-btn">&times;</button>
+    </div>
+
+    <div class="camera-viewfinder">
+      <div class="viewfinder-hud-overlay">
+        <div class="rec-dot"></div>
+        <span>LIVE OPTICAL SURVEILLANCE // SATELLITE LINK ACTIVE</span>
+      </div>
+      <iframe 
+        id="camera-stream-frame" 
+        class="camera-stream-frame" 
+        src="" 
+        allow="autoplay; encrypted-media" 
+        allowfullscreen
+      ></iframe>
+    </div>
+
+    <div class="modal-intel-grid">
+      <div class="intel-stat-box">
+        <div class="stat-label">POPULATION</div>
+        <div id="stat-pop" class="stat-val">--</div>
+      </div>
+      <div class="intel-stat-box">
+        <div class="stat-label">LOCAL TIMESTAMP</div>
+        <div id="stat-time" class="stat-val">--</div>
+      </div>
+      <div class="intel-stat-box">
+        <div class="stat-label">COORDINATES</div>
+        <div id="stat-coords" class="stat-val">--</div>
+      </div>
+      <div class="intel-stat-box">
+        <div class="stat-label">METEOROLOGY</div>
+        <div id="stat-weather" class="stat-val">--</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/static/js/arc_reactor.js"></script>
+  <script src="/static/js/globe_visualizer.js"></script>
+  <script src="/static/js/jarvis_hud.js"></script>
+</body>
+</html>
